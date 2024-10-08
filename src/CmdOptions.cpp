@@ -121,7 +121,7 @@ std::string CmdOptions::getOptionString(const std::string & optionName)
 CmdOptions::CmdOptions()
 {
     fs::detail::utf8_codecvt_facet utf8;
-    fs::path remakenRootPath = PathBuilder::getHomePath() / Constants::REMAKEN_FOLDER;
+    fs::path remakenRootPath = PathBuilder::getHomePath(*this) / Constants::REMAKEN_FOLDER;
     remakenRootPath /= "packages";
     char * rootDirectoryVar = getenv(Constants::REMAKENPKGROOT);
     if (rootDirectoryVar != nullptr) {
@@ -144,7 +144,7 @@ CmdOptions::CmdOptions()
         remakenRootPath = pkgPath;
     }
 
-    fs::path remakenProfileFolder = PathBuilder::getHomePath() / Constants::REMAKEN_FOLDER / Constants::REMAKEN_PROFILES_FOLDER ;
+    fs::path remakenProfileFolder = PathBuilder::getHomePath(*this) / Constants::REMAKEN_FOLDER / Constants::REMAKEN_PROFILES_FOLDER ;
     std::string profileName =  "default";
     m_cliApp.require_subcommand(1);
     m_cliApp.fallthrough(true);
@@ -537,7 +537,7 @@ CmdOptions::OptionResult CmdOptions::parseArguments(int argc, char** argv)
 void CmdOptions::writeConfigurationFile() const
 {
     fs::detail::utf8_codecvt_facet utf8;
-    fs::path remakenRootPath = PathBuilder::getHomePath() / Constants::REMAKEN_FOLDER;
+    fs::path remakenRootPath = PathBuilder::getHomePath(*this) / Constants::REMAKEN_FOLDER;
     fs::path remakenProfilesPath = remakenRootPath / Constants::REMAKEN_PROFILES_FOLDER;
     if (!fs::exists(remakenProfilesPath)) {
         fs::create_directories(remakenProfilesPath);
