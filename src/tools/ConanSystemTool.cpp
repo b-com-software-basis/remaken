@@ -180,10 +180,6 @@ void ConanSystemTool::install(const Dependency & dependency)
         settingsArgs.push_back("arch=" + conanArchTranslationMap.at(m_options.getArchitecture()));
     }
     if (dependency.hasOptions()) {
-        std::string separator = "";
-        if (m_conanVersion >= 2) {
-            separator = "/*";
-        }
         boost::split(options, dependency.getToolOptions(), [](char c){return c == '#';});
         for (const auto & option: options) {
             std::vector<std::string> optionInfos;
@@ -192,13 +188,17 @@ void ConanSystemTool::install(const Dependency & dependency)
             optionInfos.erase(optionInfos.begin());
             if (optionInfos.empty()) {
                 if (m_conanVersion >= 2) {
-                    optionsArgs.push_back("-o " + dependency.getName() + "/*:" + option);
+                    optionsArgs.push_back("-o *:" + option);
                 }
                 else
                 {
                     optionsArgs.push_back("-o " + option); // conan v1
                 }
             } else {
+                std::string separator = "";
+                if (m_conanVersion >= 2) {
+                    separator = "/*";
+                }
                 if (conanOptionPrefix.find(separator) != std::string::npos) {
                     optionsArgs.push_back("-o " + conanOptionPrefix + ":" + optionInfos.front());
                 } else {
@@ -702,7 +702,7 @@ std::vector<fs::path> ConanSystemTool::retrievePaths(const Dependency & dependen
         boost::split(options, dependency.getToolOptions(), [](char c){return c == '#';});
         for (const auto & option: options) {
             if (m_conanVersion >= 2) {
-                optionsArgs.push_back("-o " + dependency.getName() + "/*:" + option);
+                optionsArgs.push_back("-o *:" + option);
             }
             else {
                 optionsArgs.push_back("-o " + option);
