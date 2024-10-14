@@ -150,9 +150,7 @@ CmdOptions::CmdOptions()
     m_cliApp.fallthrough(true);
     m_cliApp.option_defaults()->always_capture_default();
     m_cliApp.set_config("--profile",profileName,"remaken profile file to read",remakenProfileFolder.generic_string(utf8), false);
-    std::cout << "remakenProfileFolder :"<< remakenProfileFolder.generic_string(utf8) << std::endl << "remaken profile name:" << profileName << std::endl;
-
-
+    
     m_config = "release";
     m_cliApp.add_option("--config,-c", m_config, "Config: " + getOptionString("--config")); // ,true);
     m_cppVersion = "11";
@@ -541,8 +539,7 @@ void CmdOptions::writeConfigurationFile() const
     fs::detail::utf8_codecvt_facet utf8;
     fs::path remakenRootPath = PathBuilder::getHomePath(*this) / Constants::REMAKEN_FOLDER;
     fs::path remakenProfilesPath = remakenRootPath / Constants::REMAKEN_PROFILES_FOLDER;
-    std::cout << "write remakenProfilesPath "<< remakenProfilesPath.generic_string(utf8) << std::endl;
-
+    
     if (!fs::exists(remakenProfilesPath)) {
 
         fs::create_directories(remakenProfilesPath);
@@ -553,8 +550,6 @@ void CmdOptions::writeConfigurationFile() const
     // workaround for CLI11 issue #648 and also waiting for issue #685
 
     std::string conf = m_cliApp.config_to_str(m_defaultProfileOptions,true);
-    std::cout<<"write conf file:" << remakenProfilePath.generic_string(utf8) << std::endl ;
-    std::cout<<"write conf:" << std::endl << conf << std::endl << "-----------------------"<< std::endl ;
     // comment all run arguments, as run command doesn't need to maintain options in configuration
     boost::replace_all(conf,"run.","#run.");
     fos<<conf;
@@ -563,9 +558,6 @@ void CmdOptions::writeConfigurationFile() const
 
 void CmdOptions::displayConfigurationSettings() const
 {
-    std::string conf = m_cliApp.config_to_str(m_defaultProfileOptions,true);
-    std::cout<<"display conf:" << std::endl << conf << std::endl << "-----------------------"<< std::endl ;
-
     std::cout<<m_cliApp.config_to_str(m_defaultProfileOptions,true)<< std::endl;
 }
 
