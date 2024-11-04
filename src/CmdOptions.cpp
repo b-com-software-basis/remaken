@@ -121,7 +121,7 @@ std::string CmdOptions::getOptionString(const std::string & optionName)
 CmdOptions::CmdOptions()
 {
     fs::detail::utf8_codecvt_facet utf8;
-    fs::path remakenRootPath = PathBuilder::getHomePath() / Constants::REMAKEN_FOLDER;
+    fs::path remakenRootPath = PathBuilder::getHomePath(*this) / Constants::REMAKEN_FOLDER;
     remakenRootPath /= "packages";
     char * rootDirectoryVar = getenv(Constants::REMAKENPKGROOT);
     if (rootDirectoryVar != nullptr) {
@@ -144,13 +144,13 @@ CmdOptions::CmdOptions()
         remakenRootPath = pkgPath;
     }
 
-    fs::path remakenProfileFolder = PathBuilder::getHomePath() / Constants::REMAKEN_FOLDER / Constants::REMAKEN_PROFILES_FOLDER ;
+    fs::path remakenProfileFolder = PathBuilder::getHomePath(*this) / Constants::REMAKEN_FOLDER / Constants::REMAKEN_PROFILES_FOLDER ;
     std::string profileName =  "default";
     m_cliApp.require_subcommand(1);
     m_cliApp.fallthrough(true);
     m_cliApp.option_defaults()->always_capture_default();
-    m_cliApp.set_config("--profile",profileName,"remaken profile file to read",remakenProfileFolder.generic_string(utf8));
-
+    m_cliApp.set_config("--profile",profileName,"remaken profile file to read",remakenProfileFolder.generic_string(utf8), false);
+    
     m_config = "release";
     m_cliApp.add_option("--config,-c", m_config, "Config: " + getOptionString("--config")); // ,true);
     m_cppVersion = "11";
@@ -537,15 +537,18 @@ CmdOptions::OptionResult CmdOptions::parseArguments(int argc, char** argv)
 void CmdOptions::writeConfigurationFile() const
 {
     fs::detail::utf8_codecvt_facet utf8;
-    fs::path remakenRootPath = PathBuilder::getHomePath() / Constants::REMAKEN_FOLDER;
+    fs::path remakenRootPath = PathBuilder::getHomePath(*this) / Constants::REMAKEN_FOLDER;
     fs::path remakenProfilesPath = remakenRootPath / Constants::REMAKEN_PROFILES_FOLDER;
+    
     if (!fs::exists(remakenProfilesPath)) {
+
         fs::create_directories(remakenProfilesPath);
     }
     fs::path remakenProfilePath = remakenProfilesPath/m_profileName;
     ofstream fos;
     fos.open(remakenProfilePath.generic_string(utf8),ios::out|ios::trunc);
     // workaround for CLI11 issue #648 and also waiting for issue #685
+
     std::string conf = m_cliApp.config_to_str(m_defaultProfileOptions,true);
     // comment all run arguments, as run command doesn't need to maintain options in configuration
     boost::replace_all(conf,"run.","#run.");
@@ -555,7 +558,7 @@ void CmdOptions::writeConfigurationFile() const
 
 void CmdOptions::displayConfigurationSettings() const
 {
-    std::cout<<m_cliApp.config_to_str(m_defaultProfileOptions,true);
+    std::cout<<m_cliApp.config_to_str(m_defaultProfileOptions,true)<< std::endl;
 }
 
 void CmdOptions::printUsage()
