@@ -100,8 +100,8 @@ int BundleManager::bundleXpcf()
             BOOST_LOG_TRIVIAL(error)<<" the xpcf configuration file must be an xml file with the correct .xml extension, file provided is "<<xpcfConfigFilePath;
             return -1;
         }
-        fs::copy_file(xpcfConfigFilePath , m_options.getDestinationRoot()/xpcfConfigFilePath.filename(), fs::copy_option::overwrite_if_exists);
-
+        copy_file_overwrite(xpcfConfigFilePath , m_options.getDestinationRoot()/xpcfConfigFilePath.filename());
+        
         const std::map<std::string, fs::path> & modulesPathMap = m_xpcfManager.parseXpcfModulesConfiguration(xpcfConfigFilePath);
         m_xpcfManager.updateXpcfModulesPath(m_options.getDestinationRoot()/xpcfConfigFilePath.filename());
         for (auto & [name,modulePath] : modulesPathMap) {

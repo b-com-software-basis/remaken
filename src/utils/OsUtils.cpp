@@ -168,7 +168,7 @@ void OsUtils::copyLibrary(const fs::path & sourceFile, const fs::path & destinat
         }
         else if (is_regular_file(sourceFile)) {
             if (!fs::exists(destinationFolderPath/sourceFile.filename()) || overwrite) {
-                fs::copy_file(sourceFile , destinationFolderPath/sourceFile.filename(), fs::copy_option::overwrite_if_exists);
+                copy_file_overwrite(sourceFile , destinationFolderPath/sourceFile.filename());
             }
         }
     }
