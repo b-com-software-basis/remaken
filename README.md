@@ -494,24 +494,12 @@ from the ```scripts/unixes``` folder, run ```./build_remaken.sh```
 
 ### Meson build (on linux so far)
 from the repository root folder, run 
+
 ```
-pushd libs
-git clone --recurse-submodules https://github.com/boostorg/boost
-pushd boost
-mkdir cmake-build
-pushd cmake-build
-cmake -DCMAKE_INSTALL_PREFIX=../../boost_install ..
-make
-make install
-popd
-popd
-popd
-meson setup meson-builddir
-pushd meson-builddir
-meson compile
-popd
+./meson_build.sh
 ```
-The remaken binary is in the meson-builddir folder
+
+The remaken binary is in the .build/remaken folder
 Note: this build depends on system openssl for now.
 
 ### Windows build

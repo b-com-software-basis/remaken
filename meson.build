@@ -4,7 +4,7 @@ add_project_arguments('-DMYVERSIONSTRING="1.10.1"', '-DBOOST_OS_LINUX_AVAILABLE'
 cc = meson.get_compiler('cpp')
 incdir = include_directories('libs/CLI11/include', 'libs/nlohmann-json/single_include', 'src')
 openssl_dep = dependency('openssl')
-boost_lib_dir = meson.project_source_root() / 'libs/boost_install/lib'
+boost_lib_dir = meson.project_source_root() / '.build/boost/install/lib'
 boost_dep = declare_dependency(
   dependencies : [cc.find_library('boost_atomic', dirs : [boost_lib_dir]), \ 
     cc.find_library('boost_charconv', dirs : [boost_lib_dir]), \ 
@@ -43,7 +43,7 @@ boost_dep = declare_dependency(
     cc.find_library('boost_url', dirs : [boost_lib_dir]), \ 
     cc.find_library('boost_wave', dirs : [boost_lib_dir]), \ 
     cc.find_library('boost_wserialization', dirs : [boost_lib_dir])], \ 
-  include_directories : include_directories('libs/boost_install/include/boost')
+  include_directories : include_directories('.build/boost/install/include/boost')
 )
 
 #boost_dep = dependency('boost', modules : ['DLL', 'Filesystem', 'Fiber'])
