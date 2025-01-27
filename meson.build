@@ -1,9 +1,13 @@
-project('remaken', 'cpp')
+project('remaken', 'cpp', default_options : ['cpp_std=c++17'])
 #NOTE: BOOST_OS_LINUX_AVAILABLE is defined hardcoded : must figure out why os detection doesn't work within boost/predef ?
 add_project_arguments('-DMYVERSIONSTRING="1.10.1"', '-DBOOST_OS_LINUX_AVAILABLE', language : 'cpp')
+
 cc = meson.get_compiler('cpp')
 incdir = include_directories('libs/CLI11/include', 'libs/nlohmann-json/single_include', 'src')
-openssl_dep = dependency('openssl')
+
+openssl_proj = subproject('openssl')
+openssl_dep = openssl_proj.get_variable('openssl_dep')
+
 boost_lib_dir = meson.project_source_root() / '.build/boost/install/lib'
 boost_dep = declare_dependency(
   dependencies : [cc.find_library('boost_atomic', dirs : [boost_lib_dir]), \ 

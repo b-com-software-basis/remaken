@@ -35,6 +35,9 @@
 .build/*
 .build-rules/*
 scripts/*/build-*
+libs/boost/*
+subprojects/*/
+
 
 # Qmake temporary files
 *.pro.user
