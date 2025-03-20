@@ -326,7 +326,7 @@ private:
     std::string m_applicationName = "";
     bool m_ignoreCache;
     bool m_invertRepositoryOrder = false;
-    bool m_verbose;
+    bool m_verbose = false;
     bool m_recurse;
     bool m_regex = false;
     bool m_tree = false;
