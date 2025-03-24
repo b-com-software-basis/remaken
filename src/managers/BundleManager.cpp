@@ -88,6 +88,8 @@ int BundleManager::bundle()
 int BundleManager::bundleXpcf()
 {
     try {
+        m_cachePackages.clear();
+
         // create bundle modules directory
         if (!fs::exists(m_options.getDestinationRoot()/m_options.getModulesSubfolder())) {
             fs::create_directories(m_options.getDestinationRoot()/m_options.getModulesSubfolder());
@@ -150,7 +152,15 @@ void BundleManager::bundleDependency(const Dependency & dependency, DependencyFi
 {
     fs::detail::utf8_codecvt_facet utf8;
     shared_ptr<IFileRetriever> fileRetriever = FileHandlerFactory::instance()->getFileHandler(dependency, m_options);
-    fs::path outputDirectory = fileRetriever->bundleArtefact(dependency);
+
+    fs::path outputDirectory;
+    std::list<std::string>::iterator it = std::find(m_cachePackages.begin(), m_cachePackages.end(), dependency.getName()+dependency.getVersion()+dependency.getMode());
+    if (m_cachePackages.end() == it)
+    {
+        outputDirectory = fileRetriever->bundleArtefact(dependency);
+        m_cachePackages.push_back(dependency.getName()+dependency.getVersion()+dependency.getMode());
+    }
+
     if (!outputDirectory.empty() && dependency.getType() == Dependency::Type::REMAKEN && m_options.recurse()) {
         this->bundleDependencies(outputDirectory / Constants::EXTRA_DEPS,  DependencyFileType::EXTRA_DEPS);
         if (type != DependencyFileType::EXTRA_DEPS) {
@@ -172,13 +182,16 @@ void BundleManager::bundleDependencies(const fs::path &  dependenciesFile, Depen
                 if (!dependency.validate()) {
                     throw std::runtime_error("Error parsing dependency file : invalid format ");
                 }
-                if (dependency.getType() == Dependency::Type::REMAKEN
-                        || dependency.getType() == Dependency::Type::CONAN
-                        || dependency.getType() == Dependency::Type::BREW
-                        || dependency.getType() == Dependency::Type::VCPKG
-                        || dependency.getType() == Dependency::Type::SYSTEM) {
-                    if (!mapContains(m_ignoredPackages, dependency.getPackageName())) {
-                        bundleDependency(dependency, type);
+                // manage shared and na for conan
+                if (dependency.getMode() != "static") {
+                    if (dependency.getType() == Dependency::Type::REMAKEN
+                            || (dependency.getType() == Dependency::Type::CONAN && dependency.getMode() == "shared")
+                            || dependency.getType() == Dependency::Type::BREW
+                            || dependency.getType() == Dependency::Type::VCPKG
+                            || dependency.getType() == Dependency::Type::SYSTEM) {
+                        if (!mapContains(m_ignoredPackages, dependency.getPackageName())) {
+                            bundleDependency(dependency, type);
+                        }
                     }
                 }
             }
