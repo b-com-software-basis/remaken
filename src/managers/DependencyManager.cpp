@@ -96,7 +96,7 @@ int DependencyManager::parse()
     bool bNeedElevation = false;
 #endif
     fs::path depPath = buildDependencyPath();
-    std::vector<Dependency> dependencies = DepUtils::parse(depPath, m_options.getMode());
+    std::vector<Dependency> dependencies = DepUtils::parse(depPath, m_options);
     for (auto dep : dependencies) {
         if (!dep.validate()) {
             bValid = false;
@@ -344,7 +344,7 @@ void DependencyManager::retrieveDependencies(const fs::path &  dependenciesFile,
     std::vector<Dependency> conditionsDependencies;
     for (fs::path depsFile : dependenciesFileList) {
         if (fs::exists(depsFile)) {
-            std::vector<Dependency> dependencies = DepUtils::filterConditionDependencies(conditionsMap, DepUtils::parse(depsFile, m_options.getMode()) );
+            std::vector<Dependency> dependencies = DepUtils::filterConditionDependencies(conditionsMap, DepUtils::parse(depsFile, m_options) );
             for (auto dep : dependencies) {
                 if (!dep.validate()) {
                     throw std::runtime_error("Error parsing dependency file : invalid format ");

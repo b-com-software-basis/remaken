@@ -80,7 +80,10 @@ int BundleManager::bundle()
     }
 
 #ifndef BOOST_OS_WINDOWS_AVAILABLE
-    BOOST_LOG_TRIVIAL(warning)<<"bundle command under implementation : rpath not reinterpreted after copy";
+    if (m_options.getVerbose()) {
+        // SLETODO rpath tool with sample : patchelf --set-rpath ".:modules" ./deploy/bin/x86_64/shared/release/SolARService_Mapping_Multi
+        BOOST_LOG_TRIVIAL(warning)<<"bundle command under implementation : rpath not reinterpreted after copy";
+    }
 #endif
     return 0;
 }
@@ -95,7 +98,9 @@ int BundleManager::bundleXpcf()
             fs::create_directories(m_options.getDestinationRoot()/m_options.getModulesSubfolder());
         }
         m_options.verboseMessage("=> bundling direct dependencies");
-        bundle();
+        if (bundle() == -1) {
+            return -1;
+        }
         m_options.verboseMessage("=> bundling XPCF modules dependencies");
         fs::path xpcfConfigFilePath = DepUtils::buildDependencyPath(m_options.getXpcfXmlFile());
         if ( xpcfConfigFilePath.extension() != ".xml") {
@@ -138,7 +143,9 @@ int BundleManager::bundleXpcf()
         return -1;
     }
 #ifndef BOOST_OS_WINDOWS_AVAILABLE
-    BOOST_LOG_TRIVIAL(warning)<<"bundleXpcf command under implementation : rpath not reinterpreted after copy";
+    if (m_options.getVerbose()) {
+        BOOST_LOG_TRIVIAL(warning)<<"bundleXpcf command under implementation : rpath not reinterpreted after copy";
+    }
 #endif
     return 0;
 }
@@ -177,7 +184,7 @@ void BundleManager::bundleDependencies(const fs::path &  dependenciesFile, Depen
     std::vector<fs::path> dependenciesFileList = DepUtils::getChildrenDependencies(dependenciesFile.parent_path(), m_options.getOS(),dependenciesFile.stem().generic_string(utf8));
     for (fs::path const & depsFile : dependenciesFileList) {
         if (fs::exists(depsFile)) {
-            std::vector<Dependency> dependencies = DepUtils::parse(depsFile, m_options.getMode());
+            std::vector<Dependency> dependencies = DepUtils::parse(depsFile, m_options);
             for (Dependency const & dependency : dependencies) {
                 if (!dependency.validate()) {
                     throw std::runtime_error("Error parsing dependency file : invalid format ");
