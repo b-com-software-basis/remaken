@@ -161,11 +161,23 @@ void BundleManager::bundleDependency(const Dependency & dependency, DependencyFi
     shared_ptr<IFileRetriever> fileRetriever = FileHandlerFactory::instance()->getFileHandler(dependency, m_options);
 
     fs::path outputDirectory;
-    std::list<std::string>::iterator it = std::find(m_cachePackages.begin(), m_cachePackages.end(), dependency.getName()+dependency.getVersion()+dependency.getMode());
-    if (m_cachePackages.end() == it)
+
+    for(std::string str : m_cachePackages)
     {
-        outputDirectory = fileRetriever->bundleArtefact(dependency);
-        m_cachePackages.push_back(dependency.getName()+dependency.getVersion()+dependency.getMode());
+        std::string currentDepOptStr = dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()+"|"+dependency.getToolOptions();
+        //search dependency in cache without options
+        if (str.find(dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()) != 0)
+        {   // not present => add in cache
+            outputDirectory = fileRetriever->bundleArtefact(dependency);
+            m_cachePackages.push_back(currentDepOptStr);
+        }
+        else
+        {   // present without options => check if present with options : yes=> display warning
+            if (str.find(currentDepOptStr) != 0)
+            {
+                BOOST_LOG_TRIVIAL(warning)<<"Current dependency has been already found with others options in cache !! maybe execution issue for bundled package !! \n. current:"<< currentDepOptStr<<"\nCache:"<<str;
+            }
+        }
     }
 
     if (!outputDirectory.empty() && dependency.getType() == Dependency::Type::REMAKEN && m_options.recurse()) {
