@@ -80,7 +80,10 @@ int BundleManager::bundle()
     }
 
 #ifndef BOOST_OS_WINDOWS_AVAILABLE
-    BOOST_LOG_TRIVIAL(warning)<<"bundle command under implementation : rpath not reinterpreted after copy";
+    if (m_options.getVerbose()) {
+        // SLETODO rpath tool with sample : patchelf --set-rpath ".:modules" ./deploy/bin/x86_64/shared/release/SolARService_Mapping_Multi
+        BOOST_LOG_TRIVIAL(warning)<<"bundle command under implementation : rpath not reinterpreted after copy";
+    }
 #endif
     return 0;
 }
@@ -88,12 +91,16 @@ int BundleManager::bundle()
 int BundleManager::bundleXpcf()
 {
     try {
+        m_cachePackages.clear();
+
         // create bundle modules directory
         if (!fs::exists(m_options.getDestinationRoot()/m_options.getModulesSubfolder())) {
             fs::create_directories(m_options.getDestinationRoot()/m_options.getModulesSubfolder());
         }
         m_options.verboseMessage("=> bundling direct dependencies");
-        bundle();
+        if (bundle() == -1) {
+            return -1;
+        }
         m_options.verboseMessage("=> bundling XPCF modules dependencies");
         fs::path xpcfConfigFilePath = DepUtils::buildDependencyPath(m_options.getXpcfXmlFile());
         if ( xpcfConfigFilePath.extension() != ".xml") {
@@ -136,7 +143,9 @@ int BundleManager::bundleXpcf()
         return -1;
     }
 #ifndef BOOST_OS_WINDOWS_AVAILABLE
-    BOOST_LOG_TRIVIAL(warning)<<"bundleXpcf command under implementation : rpath not reinterpreted after copy";
+    if (m_options.getVerbose()) {
+        BOOST_LOG_TRIVIAL(warning)<<"bundleXpcf command under implementation : rpath not reinterpreted after copy";
+    }
 #endif
     return 0;
 }
@@ -150,7 +159,27 @@ void BundleManager::bundleDependency(const Dependency & dependency, DependencyFi
 {
     fs::detail::utf8_codecvt_facet utf8;
     shared_ptr<IFileRetriever> fileRetriever = FileHandlerFactory::instance()->getFileHandler(dependency, m_options);
-    fs::path outputDirectory = fileRetriever->bundleArtefact(dependency);
+
+    fs::path outputDirectory;
+
+    for(std::string str : m_cachePackages)
+    {
+        std::string currentDepOptStr = dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()+"|"+dependency.getToolOptions();
+        //search dependency in cache without options
+        if (str.find(dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()) != 0)
+        {   // not present => add in cache
+            outputDirectory = fileRetriever->bundleArtefact(dependency);
+            m_cachePackages.push_back(currentDepOptStr);
+        }
+        else
+        {   // present without options => check if present with options : yes=> display warning
+            if (str.find(currentDepOptStr) != 0)
+            {
+                BOOST_LOG_TRIVIAL(warning)<<"Current dependency has been already found with others options in cache !! maybe execution issue for bundled package !! \n. current:"<< currentDepOptStr<<"\nCache:"<<str;
+            }
+        }
+    }
+
     if (!outputDirectory.empty() && dependency.getType() == Dependency::Type::REMAKEN && m_options.recurse()) {
         this->bundleDependencies(outputDirectory / Constants::EXTRA_DEPS,  DependencyFileType::EXTRA_DEPS);
         if (type != DependencyFileType::EXTRA_DEPS) {
@@ -167,18 +196,21 @@ void BundleManager::bundleDependencies(const fs::path &  dependenciesFile, Depen
     std::vector<fs::path> dependenciesFileList = DepUtils::getChildrenDependencies(dependenciesFile.parent_path(), m_options.getOS(),dependenciesFile.stem().generic_string(utf8));
     for (fs::path const & depsFile : dependenciesFileList) {
         if (fs::exists(depsFile)) {
-            std::vector<Dependency> dependencies = DepUtils::parse(depsFile, m_options.getMode());
+            std::vector<Dependency> dependencies = DepUtils::parse(depsFile, m_options);
             for (Dependency const & dependency : dependencies) {
                 if (!dependency.validate()) {
                     throw std::runtime_error("Error parsing dependency file : invalid format ");
                 }
-                if (dependency.getType() == Dependency::Type::REMAKEN
-                        || dependency.getType() == Dependency::Type::CONAN
-                        || dependency.getType() == Dependency::Type::BREW
-                        || dependency.getType() == Dependency::Type::VCPKG
-                        || dependency.getType() == Dependency::Type::SYSTEM) {
-                    if (!mapContains(m_ignoredPackages, dependency.getPackageName())) {
-                        bundleDependency(dependency, type);
+                // manage shared and na for conan
+                if (dependency.getMode() != "static") {
+                    if (dependency.getType() == Dependency::Type::REMAKEN
+                            || (dependency.getType() == Dependency::Type::CONAN && dependency.getMode() == "shared")
+                            || dependency.getType() == Dependency::Type::BREW
+                            || dependency.getType() == Dependency::Type::VCPKG
+                            || dependency.getType() == Dependency::Type::SYSTEM) {
+                        if (!mapContains(m_ignoredPackages, dependency.getPackageName())) {
+                            bundleDependency(dependency, type);
+                        }
                     }
                 }
             }

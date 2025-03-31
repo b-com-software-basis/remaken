@@ -212,6 +212,10 @@ public:
         return m_infoDisplayPathsOption;
     }
 
+    bool installSharedOnly() const {
+        return m_installSharedOnly;
+    }
+
     const std::string & getBuildConfig() const {
         return m_buildConfig;
     }
@@ -322,7 +326,7 @@ private:
     std::string m_applicationName = "";
     bool m_ignoreCache;
     bool m_invertRepositoryOrder = false;
-    bool m_verbose;
+    bool m_verbose = false;
     bool m_recurse;
     bool m_regex = false;
     bool m_tree = false;
@@ -339,6 +343,7 @@ private:
     bool m_debugEnabled = false;
     bool m_remoteOnly = false;
     bool m_infoDisplayPathsOption = false;
+    bool m_installSharedOnly = false;
     std::vector<std::string> m_conanForceBuildRefs;
     std::vector<std::string> m_configureConditions;
     CLI::App m_cliApp{"remaken"};

@@ -258,6 +258,7 @@ CmdOptions::CmdOptions()
     installCommand->add_flag("--remote-only", m_remoteOnly, "Only add remote/source/tap from package dependencies, dependencies are not installed"); // same as remote add command
     installCommand->add_option("--conan-build", m_conanForceBuildRefs, "conan force build reference");
     installCommand->add_option("--condition", m_configureConditions, "set condition to value");
+    installCommand->add_option("--shared-only", m_installSharedOnly, "install shared dependencies only");
 
     // LIST COMMAND
     CLI::App * listCommand = m_cliApp.add_subcommand("list", "list remaken installed dependencies. If package is provided, list the package available version. If package and version are provided, list the package files");
