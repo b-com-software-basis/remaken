@@ -60,6 +60,8 @@ void BundleManager::parseIgnoreInstall(const fs::path &  filepath)
 int BundleManager::bundle()
 {
     try {
+        m_cachePackages.clear();
+
         if (!fs::exists(m_options.getDestinationRoot())) {
             fs::create_directory(m_options.getDestinationRoot());
         }
@@ -162,21 +164,31 @@ void BundleManager::bundleDependency(const Dependency & dependency, DependencyFi
 
     fs::path outputDirectory;
 
+    std::string currentDepOptStr = dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()+"|"+dependency.getToolOptions();
+    bool cacheFound = false;
+    std::string currentCacheStr;
     for(std::string str : m_cachePackages)
     {
-        std::string currentDepOptStr = dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()+"|"+dependency.getToolOptions();
-        //search dependency in cache without options
-        if (str.find(dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()) != 0)
-        {   // not present => add in cache
-            outputDirectory = fileRetriever->bundleArtefact(dependency);
-            m_cachePackages.push_back(currentDepOptStr);
+        if (str.find(dependency.getName()+"|"+dependency.getVersion()+"|"+dependency.getMode()) == 0)
+        {   // dep is found in cache => check options in next step
+            cacheFound = true;
+            currentCacheStr = str;
+            break;
         }
-        else
-        {   // present without options => check if present with options : yes=> display warning
-            if (str.find(currentDepOptStr) != 0)
-            {
-                BOOST_LOG_TRIVIAL(warning)<<"Current dependency has been already found with others options in cache !! maybe execution issue for bundled package !! \n. current:"<< currentDepOptStr<<"\nCache:"<<str;
-            }
+    }
+
+    if (!cacheFound)
+    {
+        // not present => add in cache
+        outputDirectory = fileRetriever->bundleArtefact(dependency);
+        m_cachePackages.push_back(currentDepOptStr);
+    }
+    else
+    {
+        // present without options => check if present with options : yes=> display warning
+        if (currentCacheStr.find(currentDepOptStr) != 0)
+        {
+            BOOST_LOG_TRIVIAL(warning)<<"Current dependency has been already found with others options in cache !! maybe execution issue for bundled package !! \n. current:"<< currentDepOptStr<<"\nCache:"<<currentCacheStr;
         }
     }
 
