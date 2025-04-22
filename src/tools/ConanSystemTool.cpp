@@ -788,15 +788,16 @@ std::vector<fs::path> ConanSystemTool::retrievePaths(const Dependency & dependen
             result = std::system(command.c_str());
         }
         else {
-            std::string buildMode = dependency.getName() + "/*:";
+            std::string buildMode = "";
             if (dependency.getMode() == "static") {
                 buildMode += "shared=False";
             }
             else {
                 buildMode += "shared=True";
             }
+            std::string depBuildMode = dependency.getName() + "/*:" + buildMode;
 
-            std::string command = m_systemInstallerPath.generic_string(utf8) + " install " + "-o " + buildMode + " " + boost::algorithm::join(settingsArgs, " ") + " -s " + buildType +
+            std::string command = m_systemInstallerPath.generic_string(utf8) + " install " + "-o " + depBuildMode + " -o " + buildMode + " " + boost::algorithm::join(settingsArgs, " ") + " -s " + buildType +
                                   " -s " + cppStd + " -pr " + profileName + " " + dest_param + " " + workingDirectory.generic_string(utf8) + " " + boost::algorithm::join(optionsArgs, " ") + " " + generator_param + " json " + source + " > " + conanBuildInfoJson.generic_string(utf8) + redirectNull;
 
             if (m_options.getVerbose()) {
