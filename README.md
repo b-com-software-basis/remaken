@@ -492,6 +492,16 @@ Where:
 ### Linux build
 from the ```scripts/unixes``` folder, run ```./build_remaken.sh```
 
+### Meson build (on linux so far)
+from the repository root folder, run 
+
+```
+./meson_build.sh
+```
+
+The remaken binary is in the .build/remaken folder
+Note: this build depends on system openssl for now.
+
 ### Windows build
 from the ```scripts/win``` folder, run ```./build_remaken.bat```
 

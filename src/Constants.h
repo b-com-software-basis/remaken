@@ -50,7 +50,8 @@ typedef enum {
     pkg_config = 0x04,
     json = 0x08,
     make = 0x10,
-    bazel = 0x20
+    bazel = 0x20,
+    meson = 0x40
 } GeneratorType;
 
 typedef enum {
@@ -93,5 +94,7 @@ typename Range::const_iterator find(Range const& range, Value const& value)
 {
     return std::find(begin(range), end(range), value);
 }
+
+bool copy_file_overwrite(fs::path const& from, fs::path const& to, boost::system::error_code* ec = nullptr);
 
 #endif // CONSTANTS_H

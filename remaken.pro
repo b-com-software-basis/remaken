@@ -118,6 +118,7 @@ SOURCES += \
     src/main.cpp \
     src/Dependency.cpp \
     src/managers/DependencyManager.cpp \
+    src/Constants.cpp \    
     src/CmdOptions.cpp \
     src/Cache.cpp \
     src/commands/InstallCommand.cpp \

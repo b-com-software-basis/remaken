@@ -64,7 +64,7 @@ http::status CredentialsFileRetriever::downloadArtefact (const std::string & sou
     httpWrapper->shutdown();
 
     auto locationField = res.get().find("location");
-    newLocation = locationField->value().to_string();
+    newLocation = static_cast<std::string>(locationField->value());
     // not_connected happens sometimes
     // so don't bother reporting it.
     //

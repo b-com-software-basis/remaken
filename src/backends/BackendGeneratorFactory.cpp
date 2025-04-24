@@ -25,6 +25,7 @@
 #include "backends/CMakeGeneratorBackend.h"
 #include "backends/JSONGeneratorBackend.h"
 #include "backends/QMakeGeneratorBackend.h"
+#include "backends/MesonGeneratorBackend.h"
 
 namespace BackendGeneratorFactory {
 std::shared_ptr<IGeneratorBackend> getGenerator(const CmdOptions & options)
@@ -37,6 +38,8 @@ std::shared_ptr<IGeneratorBackend> getGenerator(const CmdOptions & options)
     case GeneratorType::qmake: return std::make_shared<QMakeGeneratorBackend>(options);
         break;
     case GeneratorType::json: return std::make_shared<JSONGeneratorBackend>(options);
+        break;
+    case GeneratorType::meson: return std::make_shared<MesonGeneratorBackend>(options);
         break;
     default:
         throw std::runtime_error("Generator not imnplemented - generator support coming in future releases");
