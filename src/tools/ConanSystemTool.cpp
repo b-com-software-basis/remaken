@@ -234,7 +234,7 @@ void ConanSystemTool::install(const Dependency & dependency)
     else {
         std::string buildMode = "";
         if (m_conanVersion >= 2) {
-            buildMode = dependency.getName() + "/*:";
+            buildMode = "&:";
         }
         if (dependency.getMode() == "static") {
             buildMode += "shared=False";
@@ -242,7 +242,7 @@ void ConanSystemTool::install(const Dependency & dependency)
         else {
             buildMode += "shared=True";
         }
-        std::string command = m_systemInstallerPath.generic_string(utf8) + " install " + "-o " + buildMode + " " + boost::algorithm::join(settingsArgs, " ") + " -s " + buildType + " -s " + cppStd + " -pr " + profileName + " " + buildForceDep + " " + boost::algorithm::join(optionsArgs, " ") + " " + source;
+        std::string command = m_systemInstallerPath.generic_string(utf8) + " install " + "-o \"" + buildMode + "\" " + boost::algorithm::join(settingsArgs, " ") + " -s " + buildType + " -s " + cppStd + " -pr " + profileName + " " + buildForceDep + " " + boost::algorithm::join(optionsArgs, " ") + " " + source;
         if (m_options.getVerbose()) {
             std::cout << command.c_str() << std::endl;
         }
@@ -795,9 +795,9 @@ std::vector<fs::path> ConanSystemTool::retrievePaths(const Dependency & dependen
             else {
                 buildMode += "shared=True";
             }
-            std::string depBuildMode = dependency.getName() + "/*:" + buildMode;
+            std::string depBuildMode = "\"&:" + buildMode + "\"";
 
-            std::string command = m_systemInstallerPath.generic_string(utf8) + " install " + "-o " + depBuildMode + /*" -o " + buildMode +*/ " " + boost::algorithm::join(settingsArgs, " ") + " -s " + buildType +
+            std::string command = m_systemInstallerPath.generic_string(utf8) + " install " + "-o " + depBuildMode + " " + boost::algorithm::join(settingsArgs, " ") + " -s " + buildType +
                                   " -s " + cppStd + " -pr " + profileName + " " + dest_param + " " + workingDirectory.generic_string(utf8) + " " + boost::algorithm::join(optionsArgs, " ") + " " + generator_param + " json " + source + " > " + conanBuildInfoJson.generic_string(utf8) + redirectNull;
 
             if (m_options.getVerbose()) {
